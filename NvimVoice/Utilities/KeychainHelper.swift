@@ -1,62 +1,65 @@
 import Foundation
-import Security
+import CryptoKit
 
+/// Stores the API key in an encrypted file under ~/.config/nvimvoice/
+/// Works without code signing (unlike Keychain with ad-hoc builds).
 enum KeychainHelper {
-    private static let service = "com.victorgalvez.NvimVoice"
-    private static let apiKeyAccount = "openai-api-key"
+    private static let configDir: URL = {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        return home.appendingPathComponent(".config/nvimvoice")
+    }()
+
+    private static let keyFile: URL = {
+        configDir.appendingPathComponent(".api-key")
+    }()
+
+    /// Derive a machine-specific key from hardware UUID
+    private static var encryptionKey: SymmetricKey {
+        let seed = machineID + "com.victorgalvez.NvimVoice.salt"
+        let hash = SHA256.hash(data: Data(seed.utf8))
+        return SymmetricKey(data: hash)
+    }
 
     static func saveAPIKey(_ key: String) throws {
-        guard let data = key.data(using: .utf8) else {
+        try FileManager.default.createDirectory(at: configDir, withIntermediateDirectories: true)
+
+        let data = Data(key.utf8)
+        let sealed = try AES.GCM.seal(data, using: encryptionKey)
+        guard let combined = sealed.combined else {
             throw KeychainError.encodingFailed
         }
+        try combined.write(to: keyFile)
 
-        // Delete existing
-        let deleteQuery: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: apiKeyAccount,
-        ]
-        SecItemDelete(deleteQuery as CFDictionary)
-
-        // Add new
-        let addQuery: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: apiKeyAccount,
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
-        ]
-
-        let status = SecItemAdd(addQuery as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            throw KeychainError.saveFailed(status)
-        }
+        // Restrict file permissions: owner read/write only
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o600],
+            ofItemAtPath: keyFile.path
+        )
     }
 
     static func loadAPIKey() -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: apiKeyAccount,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess, let data = result as? Data else {
-            return nil
-        }
+        guard let combined = try? Data(contentsOf: keyFile) else { return nil }
+        guard let box = try? AES.GCM.SealedBox(combined: combined) else { return nil }
+        guard let data = try? AES.GCM.open(box, using: encryptionKey) else { return nil }
         return String(data: data, encoding: .utf8)
     }
 
     static func deleteAPIKey() {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: apiKeyAccount,
-        ]
-        SecItemDelete(query as CFDictionary)
+        try? FileManager.default.removeItem(at: keyFile)
+    }
+
+    private static var machineID: String {
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPlatformExpertDevice"))
+        defer { IOObjectRelease(service) }
+        guard let uuid = IORegistryEntryCreateCFProperty(
+            service,
+            "IOPlatformUUID" as CFString,
+            kCFAllocatorDefault,
+            0
+        )?.takeRetainedValue() as? String else {
+            return "fallback-nvimvoice-key"
+        }
+        return uuid
     }
 }
 
@@ -67,9 +70,9 @@ enum KeychainError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .encodingFailed:
-            return "Failed to encode API key"
+            return "Failed to encrypt API key"
         case .saveFailed(let status):
-            return "Failed to save to Keychain (status: \(status))"
+            return "Failed to save (status: \(status))"
         }
     }
 }
