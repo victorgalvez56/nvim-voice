@@ -4,3 +4,7 @@
 xcuserdata/
 DerivedData/
 .DS_Store
+NvimVoice.app/Contents/MacOS/
+NvimVoice.app/Contents/Resources/
+NvimVoice.app/Contents/_CodeSignature/
+AppIcon.icns
