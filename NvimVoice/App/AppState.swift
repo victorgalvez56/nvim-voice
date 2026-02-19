@@ -6,6 +6,8 @@ final class AppState {
     // MARK: - Recording State
     var isRecording = false
     var isProcessing = false
+    var isWhisperReady = false
+    var isHotkeyActive = false
 
     // MARK: - Results
     var lastTranscription: String?
@@ -19,6 +21,18 @@ final class AppState {
 
     var allPermissionsGranted: Bool {
         hasScreenCapturePermission && hasMicrophonePermission && hasAccessibilityPermission
+    }
+
+    var missingPermissions: [String] {
+        var missing: [String] = []
+        if !hasScreenCapturePermission { missing.append("Screen Recording") }
+        if !hasMicrophonePermission { missing.append("Microphone") }
+        if !hasAccessibilityPermission { missing.append("Accessibility") }
+        return missing
+    }
+
+    var canRecord: Bool {
+        allPermissionsGranted && isWhisperReady && !isProcessing
     }
 
     // MARK: - Settings
@@ -37,16 +51,10 @@ final class AppState {
         set { UserDefaults.standard.set(newValue, forKey: "imageDetail") }
     }
 
-    var statusText: String {
-        if isProcessing { return "Processing..." }
-        if isRecording { return "Listening..." }
-        return "Ready"
-    }
-
     var menuBarIcon: String {
-        if isRecording { return "mic.fill" }
-        if isProcessing { return "brain.head.profile" }
-        return "mic"
+        if isRecording { return "waveform.circle.fill" }
+        if isProcessing { return "ellipsis.circle.fill" }
+        return "chevron.left.forwardslash.chevron.right"
     }
 }
 
