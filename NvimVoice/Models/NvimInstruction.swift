@@ -5,4 +5,5 @@ struct NvimInstruction: Codable, Equatable {
     let keySequence: String
     let steps: [String]
     let alternativeKeys: [String]?
+    let physicalKeys: String?  // e.g., "Space (left thumb) -> F (left index) -> F"
 }

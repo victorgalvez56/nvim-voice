@@ -38,6 +38,14 @@ struct OverlayContentView: View {
                 .font(.system(size: 28, weight: .bold, design: .monospaced))
                 .foregroundStyle(.primary)
 
+            // Physical key positions
+            if let physical = instruction.physicalKeys {
+                Text(physical)
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundStyle(.blue)
+                    .lineLimit(2)
+            }
+
             // Explanation
             Text(instruction.explanation)
                 .font(.system(.callout))

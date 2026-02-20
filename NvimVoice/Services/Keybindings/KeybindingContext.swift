@@ -2,6 +2,9 @@ import Foundation
 
 final class KeybindingContext {
     private var cachedContext: String?
+    var keyboardLayout: KeyboardLayout? {
+        didSet { invalidateCache() }
+    }
 
     func generateContext() -> String {
         if let cached = cachedContext { return cached }
@@ -36,11 +39,62 @@ final class KeybindingContext {
             markdown += "\n"
         }
 
+        // Physical keyboard layout
+        if let layout = keyboardLayout {
+            markdown += generateKeyboardSection(layout)
+        }
+
         cachedContext = markdown
         return markdown
     }
 
     func invalidateCache() {
         cachedContext = nil
+    }
+
+    // MARK: - Keyboard Layout Section
+
+    private func generateKeyboardSection(_ layout: KeyboardLayout) -> String {
+        var section = "## Physical Keyboard Layout (\(layout.geometry.displayName) - \"\(layout.title)\")\n\n"
+
+        // Only include Layer 0 (base layer)
+        guard let baseLayer = layout.layers.first else { return section }
+
+        section += "| Position | Tap | Hold |\n"
+        section += "|----------|-----|------|\n"
+
+        for (index, key) in baseLayer.keys.enumerated() {
+            // Skip empty and transparent keys
+            if key.isEmpty || key.isTransparent { continue }
+            guard key.tap != nil || key.hold != nil || key.holdLayer != nil || key.customLabel != nil else {
+                continue
+            }
+
+            let position = KeyPositionMap.position(for: index, geometry: layout.geometry)
+            let posLabel = position?.shortDescription ?? "key \(index)"
+
+            let tapLabel: String
+            if let t = key.tap {
+                tapLabel = t.label.isEmpty ? "-" : t.label
+            } else if let custom = key.customLabel {
+                tapLabel = custom
+            } else {
+                tapLabel = "-"
+            }
+
+            let holdLabel: String
+            if let h = key.hold {
+                holdLabel = h.label.isEmpty ? "-" : h.label
+            } else if let layer = key.holdLayer {
+                holdLabel = "Layer \(layer)"
+            } else {
+                holdLabel = "-"
+            }
+
+            section += "| \(posLabel) | \(tapLabel) | \(holdLabel) |\n"
+        }
+        section += "\n"
+
+        return section
     }
 }

@@ -11,6 +11,7 @@ final class AppDelegate: NSObject {
     private let hotkeyService = HotkeyService()
     private let overlayController = OverlayController()
     private let keybindingContext = KeybindingContext()
+    private let keymappService = KeymappService()
     private var processingTask: Task<Void, Never>?
 
     init(appState: AppState) {
@@ -22,6 +23,7 @@ final class AppDelegate: NSObject {
         Log.info("App launched")
         checkPermissions()
         setupHotkey()
+        loadKeyboardLayout()
         Task { await loadWhisperModel() }
     }
 
@@ -180,7 +182,8 @@ final class AppDelegate: NSObject {
 
         let prompt = PromptBuilder.buildPrompt(
             transcription: transcription,
-            keybindings: keybindingsMarkdown
+            keybindings: keybindingsMarkdown,
+            hasKeyboard: appState.keyboardGeometry != nil
         )
 
         let instruction = try await openAIService.analyzeScreenWithVoice(
@@ -190,6 +193,16 @@ final class AppDelegate: NSObject {
         )
 
         return instruction
+    }
+
+    // MARK: - Keyboard Layout
+
+    private func loadKeyboardLayout() {
+        guard let layout = keymappService.loadLayout() else { return }
+        keybindingContext.keyboardLayout = layout
+        appState.keyboardName = layout.title
+        appState.keyboardGeometry = layout.geometry.displayName
+        appState.keyboardLayerCount = layout.layers.count
     }
 
     // MARK: - Whisper Model

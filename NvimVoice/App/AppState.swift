@@ -51,6 +51,11 @@ final class AppState {
         set { UserDefaults.standard.set(newValue, forKey: "imageDetail") }
     }
 
+    // MARK: - Keyboard (non-persisted, loaded on launch)
+    var keyboardName: String?
+    var keyboardGeometry: String?
+    var keyboardLayerCount: Int?
+
     var menuBarIcon: String {
         if isRecording { return "waveform.circle.fill" }
         if isProcessing { return "ellipsis.circle.fill" }

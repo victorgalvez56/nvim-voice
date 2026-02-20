@@ -12,6 +12,7 @@ NvimVoice is a macOS menu bar app that translates voice commands into Neovim/Laz
 - **Native menu bar** — Status indicators, permissions, recording and results from the menu bar.
 - **Esc to cancel** — Cancel recording or processing at any time.
 - **Secure storage** — API key encrypted with AES-GCM using hardware UUID.
+- **ZSA keyboard layout** — Reads your Keymapp database to describe keys by physical position (e.g., "Space (left thumb) -> F (left index)"). Supports Moonlander, Voyager and ErgoDox EZ.
 - **Debug logging** — Structured logs at ~/.config/nvimvoice/debug.log.
 
 ### Tech Stack
@@ -63,6 +64,7 @@ make dev
 Configure the app from the menu bar → Settings:
 
 - **General**: Whisper model (tiny/base/small), overlay duration, image detail level.
+- **Keyboard**: Auto-detected ZSA keyboard layout, model and layer count (requires [Keymapp](https://www.zsa.io/flash)).
 - **API**: OpenAI API key (stored encrypted at ~/.config/nvimvoice/.api-key).
 
 ### How It Works

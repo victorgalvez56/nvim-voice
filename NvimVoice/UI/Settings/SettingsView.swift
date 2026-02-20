@@ -13,12 +13,17 @@ struct SettingsView: View {
                     Label("General", systemImage: "gear")
                 }
 
+            keyboardTab
+                .tabItem {
+                    Label("Keyboard", systemImage: "keyboard")
+                }
+
             apiTab
                 .tabItem {
                     Label("API", systemImage: "key")
                 }
         }
-        .frame(width: 450, height: 300)
+        .frame(width: 450, height: 320)
         .onAppear {
             if let key = KeychainHelper.loadAPIKey() {
                 apiKey = key
@@ -65,6 +70,36 @@ struct SettingsView: View {
                 Text("Press to start/stop recording")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
+            }
+        }
+        .padding()
+    }
+
+    private var keyboardTab: some View {
+        Form {
+            if let geometry = appState.keyboardGeometry {
+                Section("Detected Keyboard") {
+                    LabeledContent("Model", value: geometry)
+                    if let name = appState.keyboardName {
+                        LabeledContent("Layout Name", value: name)
+                    }
+                    if let layers = appState.keyboardLayerCount {
+                        LabeledContent("Layers", value: "\(layers)")
+                    }
+                }
+
+                Section {
+                    Text("Physical key positions will be included in AI responses to help you find keys on your split keyboard.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } else {
+                Section("No Keyboard Detected") {
+                    Text("Install ZSA Keymapp to enable physical key position hints for your split keyboard.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    Link("Download Keymapp", destination: URL(string: "https://www.zsa.io/flash")!)
+                }
             }
         }
         .padding()
