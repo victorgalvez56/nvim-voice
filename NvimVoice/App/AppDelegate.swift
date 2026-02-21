@@ -9,9 +9,11 @@ final class AppDelegate: NSObject {
     private let whisperService = WhisperService()
     private let openAIService = OpenAIService()
     private let hotkeyService = HotkeyService()
-    private let overlayController = OverlayController()
+    private let overlayController = DynamicIslandController()
     private let keybindingContext = KeybindingContext()
     private let keymappService = KeymappService()
+    private let usbDetector = USBKeyboardDetector.shared
+    private var loadedKeyboardLayout: KeyboardLayout?
     private var processingTask: Task<Void, Never>?
 
     init(appState: AppState) {
@@ -139,6 +141,7 @@ final class AppDelegate: NSObject {
         do {
             try audioCaptureService.startRecording()
             appState.isRecording = true
+            overlayController.showRecording()
         } catch {
             appState.errorMessage = "Failed to start recording: \(error.localizedDescription)"
         }
@@ -202,12 +205,20 @@ final class AppDelegate: NSObject {
             Log.info("No keyboard layout loaded")
             return
         }
+        loadedKeyboardLayout = layout
         keybindingContext.keyboardLayout = layout
         appState.keyboardName = layout.title
         appState.keyboardGeometry = layout.geometry.displayName
         appState.keyboardLayerCount = layout.layers.count
         appState.keyboardLayout = layout
-        overlayController.keyboardLayout = layout
+
+        usbDetector.onConnectionChanged = { [weak self] connected in
+            guard let self else { return }
+            self.overlayController.keyboardLayout = connected ? self.loadedKeyboardLayout : nil
+            Log.info("Overlay keyboard layout \(connected ? "enabled" : "disabled")")
+        }
+        usbDetector.start()
+        overlayController.keyboardLayout = usbDetector.isConnected ? layout : nil
     }
 
     // MARK: - Whisper Model
