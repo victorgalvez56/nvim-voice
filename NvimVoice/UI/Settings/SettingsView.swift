@@ -5,6 +5,7 @@ struct SettingsView: View {
     @State private var apiKey: String = ""
     @State private var showAPIKey = false
     @State private var saveStatus: String?
+    @State private var selectedLayer: Int = 0
 
     var body: some View {
         TabView {
@@ -23,7 +24,7 @@ struct SettingsView: View {
                     Label("API", systemImage: "key")
                 }
         }
-        .frame(width: 450, height: 320)
+        .frame(width: 520, height: 420)
         .onAppear {
             if let key = KeychainHelper.loadAPIKey() {
                 apiKey = key
@@ -76,33 +77,62 @@ struct SettingsView: View {
     }
 
     private var keyboardTab: some View {
-        Form {
-            if let geometry = appState.keyboardGeometry {
-                Section("Detected Keyboard") {
-                    LabeledContent("Model", value: geometry)
-                    if let name = appState.keyboardName {
-                        LabeledContent("Layout Name", value: name)
+        ScrollView {
+            if let layout = appState.keyboardLayout {
+                VStack(spacing: 12) {
+                    // Layer picker
+                    Picker("Layer", selection: $selectedLayer) {
+                        ForEach(0..<layout.layers.count, id: \.self) { i in
+                            Text("Layer \(i)").tag(i)
+                        }
                     }
-                    if let layers = appState.keyboardLayerCount {
-                        LabeledContent("Layers", value: "\(layers)")
-                    }
-                }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
 
-                Section {
-                    Text("Physical key positions will be included in AI responses to help you find keys on your split keyboard.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    // Keyboard map for selected layer
+                    KeyboardMapView(layout: layout, layerIndex: selectedLayer)
+
+                    Divider()
+
+                    // Legend
+                    HStack(spacing: 12) {
+                        keyLegendItem(color: .secondary.opacity(0.1), border: .secondary.opacity(0.3), label: "Regular")
+                        keyLegendItem(color: .green.opacity(0.15), border: .green.opacity(0.4), label: "Modifier")
+                        keyLegendItem(color: .blue.opacity(0.1), border: .blue.opacity(0.3), label: "Tap+Hold")
+                        keyLegendItem(color: .gray.opacity(0.03), border: .gray.opacity(0.1), label: "Transparent")
+                    }
+                    .font(.system(.caption2))
+                    .foregroundStyle(.secondary)
+
+                    HStack(spacing: 24) {
+                        if let geometry = appState.keyboardGeometry {
+                            Label(geometry, systemImage: "keyboard")
+                        }
+                        if let name = appState.keyboardName {
+                            Label("\"\(name)\"", systemImage: "tag")
+                        }
+                        Label("\(layout.layers.count) layers", systemImage: "square.3.layers.3d")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
                 }
+                .padding()
             } else {
-                Section("No Keyboard Detected") {
+                VStack(spacing: 12) {
+                    Image(systemName: "keyboard")
+                        .font(.largeTitle)
+                        .foregroundStyle(.tertiary)
+                    Text("No Keyboard Detected")
+                        .font(.headline)
                     Text("Install ZSA Keymapp to enable physical key position hints for your split keyboard.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                     Link("Download Keymapp", destination: URL(string: "https://www.zsa.io/flash")!)
                 }
+                .padding(32)
             }
         }
-        .padding()
     }
 
     private var apiTab: some View {
@@ -151,5 +181,15 @@ struct SettingsView: View {
             }
         }
         .padding()
+    }
+
+    private func keyLegendItem(color: Color, border: Color, label: String) -> some View {
+        HStack(spacing: 4) {
+            RoundedRectangle(cornerRadius: 3)
+                .fill(color)
+                .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(border, lineWidth: 0.5))
+                .frame(width: 14, height: 14)
+            Text(label)
+        }
     }
 }

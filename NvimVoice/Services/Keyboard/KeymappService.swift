@@ -51,14 +51,21 @@ final class KeymappService {
             return nil
         }
 
-        let title = json["title"] as? String ?? "Unknown"
-        guard let geometryStr = json["geometry"] as? String,
+        // Structure: { "layout": { "title", "geometry", "revision": { "layers": [...] } } }
+        guard let layoutJSON = json["layout"] as? [String: Any] else {
+            Log.info("No 'layout' key in Keymapp data")
+            return nil
+        }
+
+        let title = layoutJSON["title"] as? String ?? "Unknown"
+        guard let geometryStr = layoutJSON["geometry"] as? String,
               let geometry = KeyboardGeometry(rawValue: geometryStr) else {
             Log.info("Unknown keyboard geometry in Keymapp data")
             return nil
         }
 
-        guard let layersJSON = json["layers"] as? [[String: Any]] else {
+        guard let revisionJSON = layoutJSON["revision"] as? [String: Any],
+              let layersJSON = revisionJSON["layers"] as? [[String: Any]] else {
             Log.info("No layers found in Keymapp data")
             return nil
         }
@@ -77,9 +84,12 @@ final class KeymappService {
     }
 
     private func parseKeyAction(_ json: [String: Any]) -> KeyAction {
-        let tap = parseKeyCode(json["tap"] as? [String: Any])
-        let hold = parseKeyCode(json["hold"] as? [String: Any])
-        let holdLayer = json["holdLayer"] as? Int
+        let tapJSON = json["tap"] as? [String: Any]
+        let holdJSON = json["hold"] as? [String: Any]
+        let tap = parseKeyCode(tapJSON)
+        let hold = parseKeyCode(holdJSON)
+        // holdLayer can come from tap.layer or hold.layer
+        let holdLayer = (holdJSON?["layer"] as? Int) ?? (tapJSON?["layer"] as? Int)
         let customLabel = json["customLabel"] as? String
 
         return KeyAction(tap: tap, hold: hold, holdLayer: holdLayer, customLabel: customLabel)

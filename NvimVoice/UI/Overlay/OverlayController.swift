@@ -5,6 +5,7 @@ import SwiftUI
 final class OverlayController {
     private var panel: OverlayPanel?
     private var dismissTask: Task<Void, Never>?
+    var keyboardLayout: KeyboardLayout?
 
     func showProcessing() {
         show(state: .processing)
@@ -35,7 +36,7 @@ final class OverlayController {
     private func show(state: OverlayState) {
         dismissTask?.cancel()
 
-        let contentView = OverlayContentView(state: state)
+        let contentView = OverlayContentView(state: state, keyboardLayout: keyboardLayout)
         let hostingView = NSHostingView(rootView: contentView)
         hostingView.frame.size = hostingView.fittingSize
 

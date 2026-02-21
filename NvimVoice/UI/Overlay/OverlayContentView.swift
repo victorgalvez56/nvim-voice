@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OverlayContentView: View {
     let state: OverlayState
+    var keyboardLayout: KeyboardLayout?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -13,7 +14,7 @@ struct OverlayContentView: View {
             }
         }
         .padding(16)
-        .frame(width: 360)
+        .frame(width: keyboardLayout != nil ? 420 : 360)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -44,6 +45,15 @@ struct OverlayContentView: View {
                     .font(.system(.caption, design: .monospaced))
                     .foregroundStyle(.blue)
                     .lineLimit(2)
+            }
+
+            // Keyboard map with highlighted keys
+            if let layout = keyboardLayout {
+                let highlights = KeyboardMapView.highlightsFromSequence(
+                    instruction.keySequence, layout: layout
+                )
+                KeyboardMapView(layout: layout, compact: true, highlights: highlights)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
 
             // Explanation

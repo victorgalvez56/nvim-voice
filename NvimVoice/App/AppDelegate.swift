@@ -198,11 +198,16 @@ final class AppDelegate: NSObject {
     // MARK: - Keyboard Layout
 
     private func loadKeyboardLayout() {
-        guard let layout = keymappService.loadLayout() else { return }
+        guard let layout = keymappService.loadLayout() else {
+            Log.info("No keyboard layout loaded")
+            return
+        }
         keybindingContext.keyboardLayout = layout
         appState.keyboardName = layout.title
         appState.keyboardGeometry = layout.geometry.displayName
         appState.keyboardLayerCount = layout.layers.count
+        appState.keyboardLayout = layout
+        overlayController.keyboardLayout = layout
     }
 
     // MARK: - Whisper Model
