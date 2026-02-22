@@ -55,7 +55,32 @@ dmg: bundle
 	@cp -R $(APP_BUNDLE) /tmp/$(APP_NAME)-dmg/
 	@ln -s /Applications /tmp/$(APP_NAME)-dmg/Applications
 	@rm -f $(DMG_NAME)
-	@hdiutil create -volname "$(APP_NAME)" -srcfolder /tmp/$(APP_NAME)-dmg -ov -format UDZO $(DMG_NAME)
+	@# Create read-write dmg, set Finder window properties, convert to compressed
+	@hdiutil create -volname "$(APP_NAME)" -srcfolder /tmp/$(APP_NAME)-dmg -ov -format UDRW /tmp/$(APP_NAME)-rw.dmg
+	@hdiutil attach /tmp/$(APP_NAME)-rw.dmg -mountpoint /tmp/$(APP_NAME)-vol
+	@printf '%s\n' \
+		'tell application "Finder"' \
+		'  tell disk "$(APP_NAME)"' \
+		'    open' \
+		'    set current view of container window to icon view' \
+		'    set toolbar visible of container window to false' \
+		'    set statusbar visible of container window to false' \
+		'    set bounds of container window to {100, 100, 640, 400}' \
+		'    set theViewOptions to icon view options of container window' \
+		'    set arrangement of theViewOptions to not arranged' \
+		'    set icon size of theViewOptions to 80' \
+		'    set position of item "$(APP_BUNDLE)" of container window to {120, 140}' \
+		'    set position of item "Applications" of container window to {420, 140}' \
+		'    close' \
+		'    open' \
+		'    update without registering applications' \
+		'  end tell' \
+		'end tell' > /tmp/$(APP_NAME)-dmg.scpt
+	@osascript /tmp/$(APP_NAME)-dmg.scpt
+	@sleep 1
+	@hdiutil detach /tmp/$(APP_NAME)-vol
+	@hdiutil convert /tmp/$(APP_NAME)-rw.dmg -format UDZO -o $(DMG_NAME)
+	@rm -f /tmp/$(APP_NAME)-rw.dmg /tmp/$(APP_NAME)-dmg.scpt
 	@rm -rf /tmp/$(APP_NAME)-dmg
 	@echo "✅ $(DMG_NAME) ready"
 
