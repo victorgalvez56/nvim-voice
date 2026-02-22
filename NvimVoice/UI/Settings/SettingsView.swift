@@ -78,7 +78,7 @@ struct SettingsView: View {
 
     private var keyboardTab: some View {
         ScrollView {
-            if let layout = appState.keyboardLayout {
+            if let layout = appState.keyboardLayout, appState.isKeyboardConnected {
                 VStack(spacing: 12) {
                     // Layer picker
                     Picker("Layer", selection: $selectedLayer) {

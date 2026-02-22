@@ -15,6 +15,7 @@ final class AppDelegate: NSObject {
     private let usbDetector = USBKeyboardDetector.shared
     private var loadedKeyboardLayout: KeyboardLayout?
     private var processingTask: Task<Void, Never>?
+    private var onboardingController: OnboardingController?
 
     init(appState: AppState) {
         self.appState = appState
@@ -23,6 +24,24 @@ final class AppDelegate: NSObject {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Log.info("App launched")
+
+        if UserDefaults.standard.bool(forKey: "onboardingCompleted") {
+            proceedWithNormalStartup()
+        } else {
+            showOnboarding()
+        }
+    }
+
+    private func showOnboarding() {
+        let controller = OnboardingController()
+        controller.show(appState: appState, delegate: self) { [weak self] in
+            self?.onboardingController = nil
+            self?.proceedWithNormalStartup()
+        }
+        onboardingController = controller
+    }
+
+    private func proceedWithNormalStartup() {
         checkPermissions()
         setupHotkey()
         loadKeyboardLayout()
@@ -215,9 +234,11 @@ final class AppDelegate: NSObject {
         usbDetector.onConnectionChanged = { [weak self] connected in
             guard let self else { return }
             self.overlayController.keyboardLayout = connected ? self.loadedKeyboardLayout : nil
+            self.appState.isKeyboardConnected = connected
             Log.info("Overlay keyboard layout \(connected ? "enabled" : "disabled")")
         }
         usbDetector.start()
+        appState.isKeyboardConnected = usbDetector.isConnected
         overlayController.keyboardLayout = usbDetector.isConnected ? layout : nil
     }
 

@@ -66,7 +66,7 @@ final class DynamicIslandController {
 
         guard let screen = NSScreen.main else { return }
 
-        let panelHeight: CGFloat = 500
+        let panelHeight: CGFloat = 700
         let panelRect = NSRect(
             x: screen.frame.origin.x,
             y: screen.frame.maxY - panelHeight,

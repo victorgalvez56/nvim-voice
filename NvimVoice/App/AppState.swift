@@ -56,6 +56,7 @@ final class AppState {
     var keyboardGeometry: String?
     var keyboardLayerCount: Int?
     var keyboardLayout: KeyboardLayout?
+    var isKeyboardConnected: Bool = false
 
     var menuBarIcon: String {
         if isRecording { return "waveform.circle.fill" }

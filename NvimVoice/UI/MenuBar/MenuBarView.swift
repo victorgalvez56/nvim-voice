@@ -3,6 +3,7 @@ import SwiftUI
 struct MenuBarView: View {
     let appState: AppState
     let delegate: AppDelegate
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(spacing: 0) {
@@ -308,7 +309,10 @@ struct MenuBarView: View {
 
     private var footerSection: some View {
         VStack(spacing: 0) {
-            SettingsLink {
+            Button {
+                NSApp.activate(ignoringOtherApps: true)
+                openSettings()
+            } label: {
                 Label("Settings", systemImage: "gear")
             }
 

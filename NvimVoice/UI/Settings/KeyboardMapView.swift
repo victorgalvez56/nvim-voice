@@ -6,11 +6,11 @@ struct KeyboardMapView: View {
     var compact: Bool = false
     var highlights: [Int: [Int]] = [:]  // keyIndex -> [step numbers]
 
-    private var kSize: CGFloat { compact ? 22 : 30 }
-    private var kSpacing: CGFloat { compact ? 1 : 2 }
-    private var kGap: CGFloat { compact ? 16 : 30 }
-    private var fontSize: CGFloat { compact ? 7 : 8 }
-    private var cornerRadius: CGFloat { compact ? 3 : 4 }
+    private var kSize: CGFloat { compact ? 22 : 40 }
+    private var kSpacing: CGFloat { compact ? 1 : 3 }
+    private var kGap: CGFloat { compact ? 16 : 36 }
+    private var fontSize: CGFloat { compact ? 7 : 10 }
+    private var cornerRadius: CGFloat { compact ? 3 : 5 }
 
     private var activeLayer: KeyboardLayer? {
         guard layerIndex >= 0, layerIndex < layout.layers.count else { return nil }

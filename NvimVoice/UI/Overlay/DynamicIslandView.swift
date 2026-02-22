@@ -8,7 +8,7 @@ struct DynamicIslandView: View {
     private let compactWidth: CGFloat = 200
     private let compactHeight: CGFloat = 36
     private let compactRadius: CGFloat = 18
-    private let expandedWidth: CGFloat = 440
+    private let expandedWidth: CGFloat = 700
     private let expandedRadius: CGFloat = 22
 
     private let springAnimation: Animation = .spring(duration: 0.4, bounce: 0.25)
@@ -121,14 +121,13 @@ struct DynamicIslandView: View {
                 let highlights = KeyboardMapView.highlightsFromSequence(
                     instruction.keySequence, layout: layout
                 )
-                KeyboardMapView(layout: layout, compact: true, highlights: highlights)
+                KeyboardMapView(layout: layout, compact: false, highlights: highlights)
                     .frame(maxWidth: .infinity, alignment: .center)
             }
 
             Text(instruction.explanation)
                 .font(.system(.callout))
                 .foregroundStyle(.secondary)
-                .lineLimit(3)
 
             if !instruction.steps.isEmpty {
                 Divider()

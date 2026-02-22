@@ -8,23 +8,23 @@
     <string>NvimVoice</string>
     <key>CFBundleIdentifier</key>
     <string>com.victorgalvez.NvimVoice</string>
-    <key>CFBundleVersion</key>
-    <string>1</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
     <key>CFBundleExecutable</key>
     <string>NvimVoice</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
     <key>LSUIElement</key>
     <true/>
     <key>NSMicrophoneUsageDescription</key>
     <string>NvimVoice needs microphone access to capture voice commands for Neovim.</string>
     <key>NSScreenCaptureUsageDescription</key>
     <string>NvimVoice needs screen recording access to capture your editor for AI analysis.</string>
-    <key>NSHighResolutionCapable</key>
-    <true/>
-    <key>CFBundleIconFile</key>
-    <string>AppIcon</string>
 </dict>
 </plist>

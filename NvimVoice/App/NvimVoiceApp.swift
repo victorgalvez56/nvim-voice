@@ -24,5 +24,21 @@ final class AppDelegateAdaptor: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         delegate.applicationDidFinishLaunching(notification)
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(windowDidBecomeKey),
+            name: NSWindow.didBecomeKeyNotification,
+            object: nil
+        )
+    }
+
+    @objc private func windowDidBecomeKey(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow else { return }
+        if window.level == .normal {
+            window.level = .floating
+        }
+        window.orderFrontRegardless()
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
