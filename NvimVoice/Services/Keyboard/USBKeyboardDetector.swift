@@ -1,6 +1,6 @@
 import Foundation
 import IOKit
-import IOKit.usb
+import IOKit.hid
 
 @MainActor
 final class USBKeyboardDetector {
@@ -10,7 +10,6 @@ final class USBKeyboardDetector {
     var onConnectionChanged: ((Bool) -> Void)?
 
     private let zsaVendorID: Int = 0x3297
-    private let usbDeviceClasses = ["IOUSBHostDevice", "IOUSBDevice"]
     private var notifyPort: IONotificationPortRef?
     private var matchIterators: [io_iterator_t] = []
     private var removeIterators: [io_iterator_t] = []
@@ -36,25 +35,22 @@ final class USBKeyboardDetector {
     }
 
     func checkConnected() -> Bool {
-        for className in usbDeviceClasses {
-            let matching = IOServiceMatching(className) as NSMutableDictionary
-            matching[kUSBVendorID] = zsaVendorID
+        let matching = IOServiceMatching("IOHIDDevice") as NSMutableDictionary
+        matching["VendorID"] = zsaVendorID
 
-            var iterator: io_iterator_t = 0
-            let result = IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator)
-            guard result == KERN_SUCCESS else { continue }
+        var iterator: io_iterator_t = 0
+        let result = IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator)
+        guard result == KERN_SUCCESS else { return false }
 
-            var found = false
-            var service = IOIteratorNext(iterator)
-            while service != 0 {
-                found = true
-                IOObjectRelease(service)
-                service = IOIteratorNext(iterator)
-            }
-            IOObjectRelease(iterator)
-            if found { return true }
+        var found = false
+        var service = IOIteratorNext(iterator)
+        while service != 0 {
+            found = true
+            IOObjectRelease(service)
+            service = IOIteratorNext(iterator)
         }
-        return false
+        IOObjectRelease(iterator)
+        return found
     }
 
     // MARK: - Notifications
@@ -71,62 +67,60 @@ final class USBKeyboardDetector {
 
         let context = Unmanaged.passUnretained(self).toOpaque()
 
-        for className in usbDeviceClasses {
-            // Match (connect) notification
-            if let matchDict = IOServiceMatching(className) as NSMutableDictionary? {
-                matchDict[kUSBVendorID] = zsaVendorID
-                var iterator: io_iterator_t = 0
-                let matchCallback: IOServiceMatchingCallback = { refcon, iter in
-                    guard let refcon else { return }
-                    var service = IOIteratorNext(iter)
-                    while service != 0 {
-                        IOObjectRelease(service)
-                        service = IOIteratorNext(iter)
-                    }
-                    let detector = Unmanaged<USBKeyboardDetector>.fromOpaque(refcon).takeUnretainedValue()
-                    Task { @MainActor in
-                        detector.handleConnectionChange()
-                    }
+        // Connect notification
+        if let matchDict = IOServiceMatching("IOHIDDevice") as NSMutableDictionary? {
+            matchDict["VendorID"] = zsaVendorID
+            var iterator: io_iterator_t = 0
+            let matchCallback: IOServiceMatchingCallback = { refcon, iter in
+                guard let refcon else { return }
+                var service = IOIteratorNext(iter)
+                while service != 0 {
+                    IOObjectRelease(service)
+                    service = IOIteratorNext(iter)
                 }
-                IOServiceAddMatchingNotification(
-                    port,
-                    kIOMatchedNotification,
-                    matchDict as CFDictionary,
-                    matchCallback,
-                    context,
-                    &iterator
-                )
-                drainIterator(iterator)
-                matchIterators.append(iterator)
+                let detector = Unmanaged<USBKeyboardDetector>.fromOpaque(refcon).takeUnretainedValue()
+                Task { @MainActor in
+                    detector.handleConnectionChange()
+                }
             }
+            IOServiceAddMatchingNotification(
+                port,
+                kIOMatchedNotification,
+                matchDict as CFDictionary,
+                matchCallback,
+                context,
+                &iterator
+            )
+            drainIterator(iterator)
+            matchIterators.append(iterator)
+        }
 
-            // Termination (disconnect) notification
-            if let removeDict = IOServiceMatching(className) as NSMutableDictionary? {
-                removeDict[kUSBVendorID] = zsaVendorID
-                var iterator: io_iterator_t = 0
-                let removeCallback: IOServiceMatchingCallback = { refcon, iter in
-                    guard let refcon else { return }
-                    var service = IOIteratorNext(iter)
-                    while service != 0 {
-                        IOObjectRelease(service)
-                        service = IOIteratorNext(iter)
-                    }
-                    let detector = Unmanaged<USBKeyboardDetector>.fromOpaque(refcon).takeUnretainedValue()
-                    Task { @MainActor in
-                        detector.handleConnectionChange()
-                    }
+        // Disconnect notification
+        if let removeDict = IOServiceMatching("IOHIDDevice") as NSMutableDictionary? {
+            removeDict["VendorID"] = zsaVendorID
+            var iterator: io_iterator_t = 0
+            let removeCallback: IOServiceMatchingCallback = { refcon, iter in
+                guard let refcon else { return }
+                var service = IOIteratorNext(iter)
+                while service != 0 {
+                    IOObjectRelease(service)
+                    service = IOIteratorNext(iter)
                 }
-                IOServiceAddMatchingNotification(
-                    port,
-                    kIOTerminatedNotification,
-                    removeDict as CFDictionary,
-                    removeCallback,
-                    context,
-                    &iterator
-                )
-                drainIterator(iterator)
-                removeIterators.append(iterator)
+                let detector = Unmanaged<USBKeyboardDetector>.fromOpaque(refcon).takeUnretainedValue()
+                Task { @MainActor in
+                    detector.handleConnectionChange()
+                }
             }
+            IOServiceAddMatchingNotification(
+                port,
+                kIOTerminatedNotification,
+                removeDict as CFDictionary,
+                removeCallback,
+                context,
+                &iterator
+            )
+            drainIterator(iterator)
+            removeIterators.append(iterator)
         }
     }
 
