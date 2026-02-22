@@ -186,7 +186,7 @@ final class AppDelegate: NSObject {
         let prompt = PromptBuilder.buildPrompt(
             transcription: transcription,
             keybindings: keybindingsMarkdown,
-            hasKeyboard: appState.keyboardGeometry != nil
+            hasKeyboard: usbDetector.isConnected
         )
 
         let instruction = try await openAIService.analyzeScreenWithVoice(
