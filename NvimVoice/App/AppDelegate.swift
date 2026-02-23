@@ -182,7 +182,7 @@ final class AppDelegate: NSObject {
                 guard !Task.isCancelled else { return }
                 appState.errorMessage = error.localizedDescription
                 appState.isProcessing = false
-                overlayController.dismiss()
+                overlayController.showError(error.localizedDescription)
             }
             processingTask = nil
         }
@@ -199,7 +199,10 @@ final class AppDelegate: NSObject {
 
         appState.lastTranscription = transcription
 
-        let base64Image = ImageUtils.cgImageToBase64JPEG(frame, quality: 0.6)
+        let capturedFrame = frame
+        let base64Image = try await Task.detached {
+            try ImageUtils.cgImageToBase64JPEG(capturedFrame, quality: 0.6)
+        }.value
         let keybindingsMarkdown = keybindingContext.generateContext()
 
         let prompt = PromptBuilder.buildPrompt(
@@ -249,7 +252,14 @@ final class AppDelegate: NSObject {
             try await whisperService.loadModel(name: appState.whisperModel)
             appState.isWhisperReady = true
         } catch {
-            appState.errorMessage = "Failed to load Whisper model: \(error.localizedDescription)"
+            Log.error("Whisper model load failed, retrying in 3s: \(error.localizedDescription)")
+            try? await Task.sleep(for: .seconds(3))
+            do {
+                try await whisperService.loadModel(name: appState.whisperModel)
+                appState.isWhisperReady = true
+            } catch {
+                appState.errorMessage = "Failed to load Whisper model: \(error.localizedDescription)"
+            }
         }
     }
 }

@@ -54,6 +54,8 @@ struct DynamicIslandView: View {
             compactRecordingView
         case .processing:
             compactProcessingView
+        case .error(let message):
+            compactErrorView(message)
         case .expanded(let instruction):
             expandedView(instruction)
         case .collapsing(let instruction):
@@ -83,6 +85,20 @@ struct DynamicIslandView: View {
             Text("Processing...")
                 .font(.system(.callout, design: .rounded, weight: .medium))
                 .foregroundStyle(.secondary)
+        }
+        .frame(height: compactHeight)
+        .transition(.opacity)
+    }
+
+    private func compactErrorView(_ message: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "xmark.circle.fill")
+                .foregroundStyle(.red)
+                .font(.system(size: 14))
+            Text(message)
+                .font(.system(.callout, design: .rounded, weight: .medium))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
         }
         .frame(height: compactHeight)
         .transition(.opacity)
@@ -135,10 +151,10 @@ struct DynamicIslandView: View {
                     ForEach(Array(instruction.steps.enumerated()), id: \.offset) { index, step in
                         HStack(alignment: .top, spacing: 6) {
                             Text("\(index + 1).")
-                                .font(.system(.caption, design: .monospaced))
-                                .foregroundStyle(.tertiary)
+                                .font(.system(.body, design: .monospaced, weight: .semibold))
+                                .foregroundStyle(.secondary)
                             Text(step)
-                                .font(.system(.caption))
+                                .font(.system(.body))
                                 .foregroundStyle(.secondary)
                         }
                     }

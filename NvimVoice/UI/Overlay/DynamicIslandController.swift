@@ -45,6 +45,17 @@ final class DynamicIslandController {
         scheduleCollapse(instruction: instruction, after: duration)
     }
 
+    func showError(_ message: String, duration: TimeInterval = 4.0) {
+        ensurePanel()
+        islandState.phase = .error(message)
+        dismissTask?.cancel()
+        dismissTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(duration))
+            guard !Task.isCancelled else { return }
+            self?.dismiss()
+        }
+    }
+
     func dismiss() {
         dismissTask?.cancel()
         dismissTask = nil

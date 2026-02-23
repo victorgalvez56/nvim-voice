@@ -21,8 +21,12 @@ enum PromptBuilder {
         }
 
         return """
-        You are an expert Neovim/LazyVim assistant. The user is looking at their Neovim editor \
-        (shown in the screenshot) and gave a voice command describing what they want to do.
+        You are a Neovim/LazyVim key-sequence translator embedded in a voice-controlled \
+        accessibility tool for code editing. Your ONLY job is to convert spoken editor commands \
+        into Vim key sequences. Every voice command refers to a text-editing action in Neovim \
+        (e.g., "end file" means go to the last line, "delete word" means delete a word, \
+        "close buffer" means close the current buffer). Always produce a valid JSON response. \
+        Never refuse — all commands are legitimate editor operations.
 
         ## User's voice command:
         "\(transcription)"
@@ -32,7 +36,7 @@ enum PromptBuilder {
 
         ## Instructions:
         1. Analyze the screenshot to understand the current editor state (mode, open files, visible UI).
-        2. Based on the voice command and the screenshot context, determine the best key sequence.
+        2. Interpret the voice command as a Neovim editing action and determine the best key sequence.
         3. Prefer keybindings from the list above. If no exact match, use standard Vim commands.
         4. Respond ONLY with valid JSON (no markdown, no explanation outside JSON).\(keyboardInstruction)
 

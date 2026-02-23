@@ -21,10 +21,14 @@ enum Log {
         appendToFile(line)
     }
 
-    private static var timestamp: String {
+    private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "HH:mm:ss.SSS"
-        return f.string(from: Date())
+        return f
+    }()
+
+    private static var timestamp: String {
+        dateFormatter.string(from: Date())
     }
 
     private static func appendToFile(_ line: String) {

@@ -56,6 +56,7 @@ enum ScreenCaptureError: LocalizedError {
 private final class StreamOutput: NSObject, SCStreamOutput, @unchecked Sendable {
     private var continuation: CheckedContinuation<CGImage, Error>?
     private let lock = NSLock()
+    private let ciContext = CIContext()
 
     func waitForFrame(timeout: TimeInterval) async throws -> CGImage {
         try await withCheckedThrowingContinuation { continuation in
@@ -81,8 +82,7 @@ private final class StreamOutput: NSObject, SCStreamOutput, @unchecked Sendable 
         guard let imageBuffer = sampleBuffer.imageBuffer else { return }
 
         let ciImage = CIImage(cvImageBuffer: imageBuffer)
-        let context = CIContext()
-        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+        guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else { return }
 
         lock.lock()
         if let cont = continuation {

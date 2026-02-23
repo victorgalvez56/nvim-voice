@@ -44,7 +44,12 @@ final class AudioCaptureService {
                 return buffer
             }
 
-            if error == nil, let channelData = convertedBuffer.floatChannelData {
+            if let error {
+                Log.error("Audio conversion failed: \(error.localizedDescription)")
+                return
+            }
+
+            if let channelData = convertedBuffer.floatChannelData {
                 let data = Data(
                     bytes: channelData[0],
                     count: Int(convertedBuffer.frameLength) * MemoryLayout<Float>.size

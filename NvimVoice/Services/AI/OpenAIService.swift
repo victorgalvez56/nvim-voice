@@ -77,7 +77,12 @@ actor OpenAIService {
             throw OpenAIError.parseError
         }
 
-        return try JSONDecoder().decode(NvimInstruction.self, from: data)
+        do {
+            return try JSONDecoder().decode(NvimInstruction.self, from: data)
+        } catch {
+            Log.error("Failed to parse AI response: \(error). Raw content: \(jsonString)")
+            throw OpenAIError.parseError
+        }
     }
 }
 
@@ -96,7 +101,12 @@ enum OpenAIError: LocalizedError {
         case .invalidResponse:
             return "Invalid response from OpenAI"
         case .httpError(let code):
-            return "OpenAI API error (HTTP \(code))"
+            switch code {
+            case 401: return "OpenAI API error: invalid API key (HTTP 401)"
+            case 429: return "OpenAI API error: rate limit exceeded, try again shortly (HTTP 429)"
+            case 500...599: return "OpenAI server error (HTTP \(code)), try again later"
+            default: return "OpenAI API error (HTTP \(code))"
+            }
         case .apiError(let message):
             return "OpenAI: \(message)"
         case .emptyResponse:
