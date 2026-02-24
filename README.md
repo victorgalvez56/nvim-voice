@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://web-pi-three-34.vercel.app"><strong>Landing Page</strong></a> ·
+  <a href="https://nvim-voice.vercel.app"><strong>Landing Page</strong></a> ·
   <a href="https://github.com/victorgalvez56/nvim-voice/releases">Download</a> ·
   <a href="https://buymeacoffee.com/victorgalvez">Buy me a coffee</a>
 </p>
