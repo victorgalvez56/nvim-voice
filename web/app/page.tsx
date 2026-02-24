@@ -1,0 +1,23 @@
+import Hero from "@/components/Hero";
+import Features from "@/components/Features";
+import DemoSection from "@/components/DemoSection";
+import KeyboardDemo from "@/components/KeyboardDemo";
+import HowItWorks from "@/components/HowItWorks";
+import TechStack from "@/components/TechStack";
+import DownloadCTA from "@/components/DownloadCTA";
+import Footer from "@/components/Footer";
+
+export default function Home() {
+  return (
+    <main className="min-h-screen">
+      <Hero />
+      <Features />
+      <DemoSection />
+      <KeyboardDemo />
+      <HowItWorks />
+      <TechStack />
+      <DownloadCTA />
+      <Footer />
+    </main>
+  );
+}

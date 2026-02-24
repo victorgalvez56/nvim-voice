@@ -8,3 +8,13 @@ NvimVoice.app/Contents/MacOS/
 NvimVoice.app/Contents/Resources/
 NvimVoice.app/Contents/_CodeSignature/
 AppIcon.icns
+*.dmg
+
+# Web (Next.js)
+web/node_modules/
+web/.next/
+web/out/
+web/.env
+web/.env.local
+web/public/*.dmg
+web/public/*.gif

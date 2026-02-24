@@ -49,6 +49,8 @@ struct OnboardingView: View {
             APIKeyStepView(state: state)
         case .whisperModel:
             WhisperModelStepView(state: state)
+        case .keyboard:
+            KeyboardStepView(state: state)
         case .ready:
             ReadyStepView(state: state)
         }

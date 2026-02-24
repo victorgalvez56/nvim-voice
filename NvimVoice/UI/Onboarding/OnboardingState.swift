@@ -6,6 +6,7 @@ enum OnboardingStep: Int, CaseIterable {
     case permissions
     case apiKey
     case whisperModel
+    case keyboard
     case ready
 }
 
@@ -26,13 +27,17 @@ final class OnboardingState {
     // Model
     var selectedModel: String = "base"
 
+    // Keyboard
+    var detectedKeyboardLayout: KeyboardLayout?
+    var isZSADetected: Bool = false
+
     var allPermissionsGranted: Bool {
         hasScreenCapture && hasMicrophone && hasAccessibility
     }
 
     var canAdvance: Bool {
         switch currentStep {
-        case .welcome, .whisperModel, .ready:
+        case .welcome, .whisperModel, .keyboard, .ready:
             return true
         case .permissions:
             return allPermissionsGranted
@@ -65,5 +70,16 @@ final class OnboardingState {
 
     func refreshMicrophone() async {
         hasMicrophone = await AudioPermission.requestPermission()
+    }
+
+    func detectKeyboard() {
+        let keymappService = KeymappService()
+        if let zsaLayout = keymappService.loadLayout() {
+            detectedKeyboardLayout = zsaLayout
+            isZSADetected = true
+        } else {
+            detectedKeyboardLayout = StandardLayoutProvider.layout()
+            isZSADetected = false
+        }
     }
 }

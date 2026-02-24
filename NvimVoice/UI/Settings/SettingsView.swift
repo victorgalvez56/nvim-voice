@@ -122,13 +122,12 @@ struct SettingsView: View {
                     Image(systemName: "keyboard")
                         .font(.largeTitle)
                         .foregroundStyle(.tertiary)
-                    Text("No Keyboard Detected")
+                    Text("No Keyboard Layout")
                         .font(.headline)
-                    Text("Install ZSA Keymapp to enable physical key position hints for your split keyboard.")
+                    Text("Keyboard layout could not be loaded. Restart the app to try again.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
-                    Link("Download Keymapp", destination: URL(string: "https://www.zsa.io/flash")!)
                 }
                 .padding(32)
             }

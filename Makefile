@@ -3,7 +3,7 @@ APP_BUNDLE = $(APP_NAME).app
 SIGN_ID = Apple Development: Victor Galvez (7BVX533M64)
 DMG_NAME = $(APP_NAME).dmg
 
-.PHONY: dev watch build bundle run install dmg clean
+.PHONY: dev watch build bundle run install dmg clean web-dev web-build
 
 # Dev: debug build + relaunch app bundle (~2-5s incremental)
 dev:
@@ -88,3 +88,10 @@ clean:
 	swift package clean
 	rm -rf $(APP_BUNDLE)/Contents/MacOS/$(APP_NAME)
 	rm -f $(DMG_NAME)
+
+# Web (landing page)
+web-dev:
+	cd web && npm run dev
+
+web-build:
+	cd web && npm run build

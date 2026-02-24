@@ -10,6 +10,8 @@ enum KeyPositionMap {
             map = voyagerPositions
         case .ergodoxEz:
             map = ergodoxPositions
+        case .standard:
+            map = standardPositions
         }
         guard index >= 0, index < map.count else { return nil }
         return map[index]
@@ -134,5 +136,93 @@ enum KeyPositionMap {
             }
         }
         return positions
+    }()
+
+    // MARK: - Standard ANSI (61 keys)
+    // Row 0 (14): Esc 1 2 3 4 5 6 | 7 8 9 0 - = Bksp
+    // Row 1 (14): Tab Q W E R T | Y U I O P [ ] \
+    // Row 2 (13): Caps A S D F G | H J K L ; ' Enter
+    // Row 3 (12): LShift Z X C V B | N M , . / RShift
+    // Row 4  (8): LCtrl LAlt LCmd | Space | RCmd RAlt Left Right
+    // Left/right split at T/Y boundary (column 6 on rows 0-1, column 5-6 on rows 2-3)
+
+    static let standardPositions: [PhysicalKeyPosition] = {
+        typealias P = PhysicalKeyPosition
+        var pos: [P] = []
+
+        // Row 0 — number row (14 keys)
+        // Esc(L pinky), 1(L pinky), 2(L ring), 3(L mid), 4(L idx), 5(L idx), 6(L idx)
+        // 7(R idx), 8(R idx), 9(R mid), 0(R ring), -(R pinky), =(R pinky), Bksp(R pinky)
+        pos.append(P(hand: .left,  finger: .pinky,  row: .numberRow))  // Esc
+        pos.append(P(hand: .left,  finger: .pinky,  row: .numberRow))  // 1
+        pos.append(P(hand: .left,  finger: .ring,   row: .numberRow))  // 2
+        pos.append(P(hand: .left,  finger: .middle, row: .numberRow))  // 3
+        pos.append(P(hand: .left,  finger: .index,  row: .numberRow))  // 4
+        pos.append(P(hand: .left,  finger: .index,  row: .numberRow))  // 5
+        pos.append(P(hand: .left,  finger: .index,  row: .numberRow))  // 6
+        pos.append(P(hand: .right, finger: .index,  row: .numberRow))  // 7
+        pos.append(P(hand: .right, finger: .index,  row: .numberRow))  // 8
+        pos.append(P(hand: .right, finger: .middle, row: .numberRow))  // 9
+        pos.append(P(hand: .right, finger: .ring,   row: .numberRow))  // 0
+        pos.append(P(hand: .right, finger: .pinky,  row: .numberRow))  // -
+        pos.append(P(hand: .right, finger: .pinky,  row: .numberRow))  // =
+        pos.append(P(hand: .right, finger: .pinky,  row: .numberRow))  // Bksp
+
+        // Row 1 — top row (14 keys)
+        pos.append(P(hand: .left,  finger: .pinky,  row: .topRow))  // Tab
+        pos.append(P(hand: .left,  finger: .pinky,  row: .topRow))  // Q
+        pos.append(P(hand: .left,  finger: .ring,   row: .topRow))  // W
+        pos.append(P(hand: .left,  finger: .middle, row: .topRow))  // E
+        pos.append(P(hand: .left,  finger: .index,  row: .topRow))  // R
+        pos.append(P(hand: .left,  finger: .index,  row: .topRow))  // T
+        pos.append(P(hand: .right, finger: .index,  row: .topRow))  // Y
+        pos.append(P(hand: .right, finger: .index,  row: .topRow))  // U
+        pos.append(P(hand: .right, finger: .middle, row: .topRow))  // I
+        pos.append(P(hand: .right, finger: .ring,   row: .topRow))  // O
+        pos.append(P(hand: .right, finger: .pinky,  row: .topRow))  // P
+        pos.append(P(hand: .right, finger: .pinky,  row: .topRow))  // [
+        pos.append(P(hand: .right, finger: .pinky,  row: .topRow))  // ]
+        pos.append(P(hand: .right, finger: .pinky,  row: .topRow))  // backslash
+
+        // Row 2 — home row (13 keys)
+        pos.append(P(hand: .left,  finger: .pinky,  row: .homeRow))  // Caps
+        pos.append(P(hand: .left,  finger: .pinky,  row: .homeRow))  // A
+        pos.append(P(hand: .left,  finger: .ring,   row: .homeRow))  // S
+        pos.append(P(hand: .left,  finger: .middle, row: .homeRow))  // D
+        pos.append(P(hand: .left,  finger: .index,  row: .homeRow))  // F
+        pos.append(P(hand: .left,  finger: .index,  row: .homeRow))  // G
+        pos.append(P(hand: .right, finger: .index,  row: .homeRow))  // H
+        pos.append(P(hand: .right, finger: .index,  row: .homeRow))  // J
+        pos.append(P(hand: .right, finger: .middle, row: .homeRow))  // K
+        pos.append(P(hand: .right, finger: .ring,   row: .homeRow))  // L
+        pos.append(P(hand: .right, finger: .pinky,  row: .homeRow))  // ;
+        pos.append(P(hand: .right, finger: .pinky,  row: .homeRow))  // '
+        pos.append(P(hand: .right, finger: .pinky,  row: .homeRow))  // Enter
+
+        // Row 3 — bottom row (12 keys)
+        pos.append(P(hand: .left,  finger: .pinky,  row: .bottomRow))  // LShift
+        pos.append(P(hand: .left,  finger: .pinky,  row: .bottomRow))  // Z
+        pos.append(P(hand: .left,  finger: .ring,   row: .bottomRow))  // X
+        pos.append(P(hand: .left,  finger: .middle, row: .bottomRow))  // C
+        pos.append(P(hand: .left,  finger: .index,  row: .bottomRow))  // V
+        pos.append(P(hand: .left,  finger: .index,  row: .bottomRow))  // B
+        pos.append(P(hand: .right, finger: .index,  row: .bottomRow))  // N
+        pos.append(P(hand: .right, finger: .index,  row: .bottomRow))  // M
+        pos.append(P(hand: .right, finger: .middle, row: .bottomRow))  // ,
+        pos.append(P(hand: .right, finger: .ring,   row: .bottomRow))  // .
+        pos.append(P(hand: .right, finger: .pinky,  row: .bottomRow))  // /
+        pos.append(P(hand: .right, finger: .pinky,  row: .bottomRow))  // RShift
+
+        // Row 4 — modifier/space row (8 keys)
+        pos.append(P(hand: .left,  finger: .pinky,  row: .bottomRow))  // LCtrl
+        pos.append(P(hand: .left,  finger: .ring,   row: .bottomRow))  // LAlt
+        pos.append(P(hand: .left,  finger: .thumb,  row: .bottomRow))  // LCmd
+        pos.append(P(hand: .left,  finger: .thumb,  row: .bottomRow))  // Space
+        pos.append(P(hand: .right, finger: .thumb,  row: .bottomRow))  // RCmd
+        pos.append(P(hand: .right, finger: .ring,   row: .bottomRow))  // RAlt
+        pos.append(P(hand: .right, finger: .pinky,  row: .bottomRow))  // Left
+        pos.append(P(hand: .right, finger: .pinky,  row: .bottomRow))  // Right
+
+        return pos
     }()
 }

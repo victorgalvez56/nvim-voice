@@ -6,15 +6,40 @@ struct KeyboardMapView: View {
     var compact: Bool = false
     var highlights: [Int: [Int]] = [:]  // keyIndex -> [step numbers]
 
-    private var kSize: CGFloat { compact ? 22 : 40 }
-    private var kSpacing: CGFloat { compact ? 1 : 3 }
-    private var kGap: CGFloat { compact ? 16 : 36 }
-    private var fontSize: CGFloat { compact ? 7 : 10 }
-    private var cornerRadius: CGFloat { compact ? 3 : 5 }
-
     private var activeLayer: KeyboardLayer? {
         guard layerIndex >= 0, layerIndex < layout.layers.count else { return nil }
         return layout.layers[layerIndex]
+    }
+
+    // Compact uses fixed sizes; non-compact is calculated from available width
+    @State private var computedSize: CGFloat = 40
+
+    private var kSize: CGFloat { compact ? 22 : computedSize }
+    private var kSpacing: CGFloat { kSize * (compact ? 0.045 : 0.075) }
+    private var kGap: CGFloat { kSize * (compact ? 0.73 : 0.9) }
+    private var fontSize: CGFloat { kSize * 0.25 }
+    private var cornerRadius: CGFloat { kSize * 0.125 }
+
+    private var keysPerSide: CGFloat {
+        switch layout.geometry {
+        case .moonlander, .ergodoxEz: return 7
+        case .voyager: return 6
+        case .standard: return 14
+        }
+    }
+
+    private func fitKeySize(in width: CGFloat) -> CGFloat {
+        if layout.geometry.isSplit {
+            // width = 2 * (keysPerSide * k + (keysPerSide - 1) * spacing) + gap
+            let n = keysPerSide
+            let factor = 2 * n + 2 * (n - 1) * 0.075 + 0.9
+            return max(floor(width / factor), 16)
+        } else {
+            // width = keysPerSide * k + (keysPerSide - 1) * spacing
+            let n = keysPerSide
+            let factor = n + (n - 1) * 0.075
+            return max(floor(width / factor), 16)
+        }
     }
 
     var body: some View {
@@ -25,14 +50,37 @@ struct KeyboardMapView: View {
                     .foregroundStyle(.secondary)
             }
 
-            switch layout.geometry {
-            case .moonlander:
-                moonlanderView
-            case .voyager:
-                voyagerView
-            case .ergodoxEz:
-                moonlanderView
+            if compact {
+                keyboardContent
+            } else {
+                GeometryReader { geo in
+                    keyboardContent
+                        .onAppear { computedSize = fitKeySize(in: geo.size.width) }
+                        .onChange(of: geo.size.width) { _, newWidth in
+                            computedSize = fitKeySize(in: newWidth)
+                        }
+                }
+                .frame(height: keyboardHeight)
             }
+        }
+    }
+
+    private var keyboardHeight: CGFloat {
+        let rows: CGFloat = layout.geometry.isSplit ? 6 : 5
+        return rows * kSize + (rows - 1) * kSpacing + kSize * 0.5
+    }
+
+    @ViewBuilder
+    private var keyboardContent: some View {
+        switch layout.geometry {
+        case .moonlander:
+            moonlanderView
+        case .voyager:
+            voyagerView
+        case .ergodoxEz:
+            moonlanderView
+        case .standard:
+            standardView
         }
     }
 
@@ -91,6 +139,18 @@ struct KeyboardMapView: View {
                     Spacer().frame(width: (kSize + kSpacing) * 4)
                 }
             }
+        }
+    }
+
+    // MARK: - Standard ANSI (61 keys)
+
+    private var standardView: some View {
+        VStack(alignment: .leading, spacing: kSpacing) {
+            keyRow(start: 0, count: 14)   // Row 0: Esc 1-0 - = Bksp
+            keyRow(start: 14, count: 14)  // Row 1: Tab Q-P [ ] backslash
+            keyRow(start: 28, count: 13)  // Row 2: Caps A-L ; ' Enter
+            keyRow(start: 41, count: 12)  // Row 3: LShift Z-/ RShift
+            keyRow(start: 53, count: 8)   // Row 4: LCtrl LAlt LCmd Space RCmd RAlt Left Right
         }
     }
 

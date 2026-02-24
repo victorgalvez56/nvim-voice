@@ -1,78 +1,135 @@
-**NvimVoice** — Control Neovim with your voice.
+<p align="center">
+  <img src="logo-nvim-learn.png" alt="NvimVoice" width="100" />
+</p>
 
-NvimVoice is a macOS menu bar app that translates voice commands into Neovim/LazyVim keybindings. Speak what you want to do, and the app shows you the exact keys to press, with visual context from your editor.
+<h1 align="center">NvimVoice</h1>
 
-### Features
+<p align="center">
+  <strong>Learn and remember Neovim keybindings with your voice.</strong>
+</p>
 
-- **Voice to keybindings** — Press Cmd+Shift+V, speak a command and get the exact Neovim/LazyVim keybinding.
-- **Local transcription** — Whisper runs locally via WhisperKit. No audio sent to the cloud.
-- **Visual analysis** — Captures your screen and uses GPT-4 Vision to understand your editor context.
-- **Floating overlay** — Displays results in a floating window with key sequence, explanation, steps and alternatives.
-- **Custom keybindings** — Parses your Neovim config (~/.config/nvim/lua) and merges it with LazyVim defaults.
-- **Native menu bar** — Status indicators, permissions, recording and results from the menu bar.
-- **Esc to cancel** — Cancel recording or processing at any time.
-- **Secure storage** — API key encrypted with AES-GCM using hardware UUID.
-- **ZSA keyboard layout** — Reads your Keymapp database to describe keys by physical position (e.g., "Space (left thumb) -> F (left index)"). Supports Moonlander, Voyager and ErgoDox EZ.
-- **Debug logging** — Structured logs at ~/.config/nvimvoice/debug.log.
+<p align="center">
+  <img src="https://img.shields.io/badge/platform-macOS%2014%2B-blue" alt="Platform" />
+  <img src="https://img.shields.io/badge/Swift-5.9%2B-orange" alt="Swift" />
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License" />
+</p>
 
-### Tech Stack
+<p align="center">
+  <a href="https://web-pi-three-34.vercel.app"><strong>Landing Page</strong></a> ·
+  <a href="https://github.com/victorgalvez56/nvim-voice/releases">Download</a> ·
+  <a href="https://buymeacoffee.com/victorgalvez">Buy me a coffee</a>
+</p>
 
-- **Language**: Swift 5.9+
-- **Platform**: macOS 14.0+
-- **UI**: SwiftUI (MenuBarExtra + NSPanel overlay)
-- **Transcription**: WhisperKit 0.9+ (local Whisper)
-- **AI**: OpenAI GPT-4 Vision (gpt-4o)
-- **Audio**: AVAudioEngine (16kHz mono Float32)
-- **Capture**: ScreenCaptureKit
-- **Security**: CryptoKit (AES-GCM)
-- **Build**: Swift Package Manager + Makefile
+---
 
-### Required Permissions
+NvimVoice is a macOS menu bar app that teaches you Neovim/LazyVim keybindings using your voice. Press a hotkey, describe what you want to do, and see the exact keys to press — step by step, with visual context from your editor. It doesn't type for you. It teaches you.
 
-- **Microphone** — To record voice commands.
-- **Screen Recording** — To capture visual context from the editor.
-- **Accessibility** — For the global hotkey (Cmd+Shift+V).
+<!-- screenshot placeholder -->
+<!-- ![Screenshot](docs/screenshot.png) -->
 
-### Installation
+## How It Works
+
+1. Press **Cmd+Shift+V** (global hotkey).
+2. Speak your command (e.g. "find files in this project").
+3. Press **Cmd+Shift+V** again to stop recording.
+4. Whisper transcribes the audio locally.
+5. A screenshot of your editor is captured.
+6. GPT-4 Vision analyzes transcription + screenshot + available keybindings.
+7. A floating overlay shows the key sequence (e.g. `<leader>ff`), explanation, and alternatives.
+
+## Features
+
+- **Voice to Keybindings** — Press Cmd+Shift+V, speak a command, get the exact Neovim/LazyVim keybinding.
+- **Local Transcription** — Whisper runs locally via WhisperKit. No audio sent to the cloud.
+- **Visual Context** — Captures your screen and uses GPT-4 Vision to understand your editor state.
+- **Dynamic Island Overlay** — Floating pill with key sequence, step-by-step instructions, and alternatives.
+- **ZSA Keyboard Support** — Physical key positions for Moonlander, Voyager, and ErgoDox EZ via [Keymapp](https://www.zsa.io/flash).
+- **LazyVim Aware** — Parses your Neovim config and merges it with LazyVim defaults.
+- **Secure Storage** — API key encrypted with AES-GCM using hardware UUID.
+- **Debug Logging** — Structured logs at `~/.config/nvimvoice/debug.log`.
+
+## Installation
+
+### Download
+
+Grab the latest `.dmg` from the [Releases](https://github.com/victorgalvez56/nvim-voice/releases) page.
+
+### Build from Source
 
 ```bash
-# Clone the repo
 git clone https://github.com/victorgalvez56/nvim-voice.git
 cd nvim-voice
 
 # Build and install to /Applications
 make install
 
-# Or just run in dev mode
+# Or run in dev mode
 make dev
 ```
 
-### Makefile
+## Makefile Commands
 
 | Command | Description |
 |---------|-------------|
-| `make dev` | Debug build + codesign + relaunch (~2-3s) |
+| `make dev` | Debug build + codesign + relaunch |
 | `make watch` | Auto-rebuild on .swift changes |
 | `make build` | Release build |
 | `make bundle` | Create app bundle |
 | `make run` | Bundle + launch |
 | `make install` | Copy to /Applications |
+| `make dmg` | Create distributable .dmg |
 | `make clean` | Clean build artifacts |
+| `make web-dev` | Run landing page dev server |
+| `make web-build` | Build landing page for static hosting |
 
-### Configuration
+## Required Permissions
+
+| Permission | Reason |
+|------------|--------|
+| Microphone | Record voice commands |
+| Screen Recording | Capture visual context from the editor |
+| Accessibility | Global hotkey (Cmd+Shift+V) |
+
+## Configuration
 
 Configure the app from the menu bar → Settings:
 
-- **General**: Whisper model (tiny/base/small), overlay duration, image detail level.
-- **Keyboard**: Auto-detected ZSA keyboard layout, model and layer count (requires [Keymapp](https://www.zsa.io/flash)).
-- **API**: OpenAI API key (stored encrypted at ~/.config/nvimvoice/.api-key).
+- **General** — Whisper model (tiny/base/small), overlay duration, image detail level.
+- **Keyboard** — Auto-detected ZSA keyboard layout, model, and layer count.
+- **API** — OpenAI API key (stored encrypted at `~/.config/nvimvoice/.api-key`).
 
-### How It Works
+## Tech Stack
 
-1. Press **Cmd+Shift+V** (global hotkey).
-2. Speak your command (e.g. "find files in this project").
-3. Press **Cmd+Shift+V** again to stop.
-4. Whisper transcribes the audio locally.
-5. A screenshot of your editor is captured.
-6. GPT-4 Vision analyzes transcription + screenshot + available keybindings.
-7. The overlay shows the key sequence (e.g. `<leader>ff`), explanation and alternatives.
+| Component | Technology |
+|-----------|-----------|
+| Language | Swift 5.9+ |
+| Platform | macOS 14.0+ (Sonoma) |
+| UI | SwiftUI (MenuBarExtra + NSPanel) |
+| Transcription | WhisperKit (local Whisper) |
+| AI | OpenAI GPT-4 Vision (gpt-4o) |
+| Audio | AVAudioEngine (16kHz mono Float32) |
+| Screen Capture | ScreenCaptureKit |
+| Security | CryptoKit (AES-GCM) |
+| Build | Swift Package Manager + Makefile |
+
+## Project Structure
+
+```
+NvimVoice/
+├── NvimVoice/              # Swift source
+│   ├── App/                # App entry point, menu bar
+│   ├── Models/             # Data models, prompts
+│   ├── Services/           # Audio, AI, screen capture, keyboard
+│   ├── UI/                 # SwiftUI views (overlay, settings, onboarding)
+│   └── Resources/          # Plist, entitlements, assets
+├── web/                    # Next.js landing page
+│   ├── app/                # App router pages
+│   └── components/         # React components
+├── Package.swift
+├── Makefile
+└── README.md
+```
+
+## License
+
+MIT

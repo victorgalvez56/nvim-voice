@@ -6,12 +6,14 @@ enum KeyboardGeometry: String, Codable {
     case moonlander = "moonlander"
     case voyager = "voyager"
     case ergodoxEz = "ergodox-ez"
+    case standard = "standard"
 
     var displayName: String {
         switch self {
         case .moonlander: return "Moonlander"
         case .voyager: return "Voyager"
         case .ergodoxEz: return "ErgoDox EZ"
+        case .standard: return "Standard ANSI"
         }
     }
 
@@ -20,6 +22,14 @@ enum KeyboardGeometry: String, Codable {
         case .moonlander: return 72
         case .voyager: return 52
         case .ergodoxEz: return 76
+        case .standard: return 61
+        }
+    }
+
+    var isSplit: Bool {
+        switch self {
+        case .moonlander, .voyager, .ergodoxEz: return true
+        case .standard: return false
         }
     }
 }
